@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
+
 # jlog.rb
 #	a CLI journal logger
 # Id$ nonnax 2021-10-01 13:18:59 +0800
@@ -8,18 +9,18 @@ require 'yaml'
 require_relative 'editor'
 require_relative 'hashfile'
 
-HOME_PATH=File.expand_path('~')
+HOME_PATH = File.expand_path('~')
 
-puts "#{$0} 1"
-puts "or"
-puts "cat <File> | #{$0} "
+puts "#{$PROGRAM_NAME} 1"
+puts 'or'
+puts "cat <File> | #{$PROGRAM_NAME} "
 
 command = ARGV.empty? ? '' : ARGV
 
-if not STDIN.tty? and not STDIN.closed?
-	command = $stdin.readlines.join
+if !$stdin.tty? && !$stdin.closed?
+  command = $stdin.readlines.join
 else
-	p "no input"
+  p 'no input'
 end
 
 DATA_FILE = [Time.now.strftime('%Y-%m'), 'json'].join('.')
@@ -37,7 +38,7 @@ $config = {
 }
 
 def load_config
-	# edit .jlog.yaml to update path and add tags
+  # edit .jlog.yaml to update path and add tags
   p config_file = File.expand_path(
     File.join(
       HOME_PATH,
@@ -47,11 +48,11 @@ def load_config
 
   if File.exist?(config_file)
     $config = YAML.load(
-    						File.read(config_file)
-    					)
+      File.read(config_file)
+    )
     $default_tags = $config[:tags]
   else
-  	
+
     File.open(config_file, 'w') { |f| f.write $config.to_yaml }
   end
 end
@@ -60,19 +61,19 @@ end
 load_config
 
 DATA_PATH = File.expand_path(
-					File.join(
-							$config[:path],
-							DATA_FILE
-							)
-					)
+  File.join(
+    $config[:path],
+    DATA_FILE
+  )
+)
 
 data = { entries: [] }
 data.load(DATA_PATH) if File.exist?(DATA_PATH)
 
 def edit(data)
-	# fzf expects strings
+  # fzf expects strings
   data[:tags] = data[:tags].join(',')
-	
+
   loop do
     k, v = data
            .fzf_map
@@ -87,14 +88,15 @@ def edit(data)
     else
       choices = $default_tags.uniq
       next if (v_new = choices.fzf).empty?
+
       v = v_new
           .uniq
           .join(',')
     end
     data[k] = v
   end
-  #restore array post-fzf
-  data[:tags] = data[:tags].split(/,/) 
+  # restore array post-fzf
+  data[:tags] = data[:tags].split(/,/)
   data.merge!(timestamp: Time.now.strftime('%Y-%m-%dT%X'))
 
   yield data if block_given?
@@ -107,12 +109,12 @@ def data.list_choices
     .first
 end
 
-def data.add(path, text="")
+def data.add(path, text = '')
   entry = {
     text: text.chomp,
     tags: %w[note]
   }
-  new_row = text.strip=="" ? edit(entry) : entry
+  new_row = text.strip == '' ? edit(entry) : entry
   return if new_row[:text].strip == ''
 
   (self[:entries] ||= []) << new_row
@@ -120,8 +122,7 @@ def data.add(path, text="")
   puts new_row.to_yaml
 end
 
-case 
-when Array===command
+if command.is_a?(Array)
   loop do
     index, v = data.list_choices
     break unless index
@@ -131,5 +132,5 @@ when Array===command
     data.save(DATA_PATH)
   end
 else
-	  data.add(DATA_PATH, command)
+  data.add(DATA_PATH, command)
 end
