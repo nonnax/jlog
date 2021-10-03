@@ -5,4 +5,4 @@
 - modify **editor.rb** to your CLI editor of choice
 - put **yamlview.rb** into a directory found in your $PATH variable (such as /usr/bin).
 
-# fzf.rb found at https://github.com/nonnax/rubytools
+* fzf.rb found at https://github.com/nonnax/rubytools
