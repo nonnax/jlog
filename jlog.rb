@@ -103,7 +103,7 @@ end
 
 def data.list_choices
   self[:entries]
-    .fzf_with_index(cmd: %(fzf --preview-window=top --preview='yamlview.rb {} | bat -pp -l markdown' --ansi ))
+    .fzf_with_index(cmd: %(fzf --preview-window=top --preview='mdview.rb {}' --ansi ))
     .first
 end
 
